@@ -182,3 +182,29 @@ def train_xgb_model(X_train, y_train, X_valid, y_valid, X_test, y_test, project_
         model_artifact.add_file("models/xgb-truck-model.pkl")
         wandb.save("models/xgb-truck-model.pkl")
         run.log_artifact(model_artifact)
+
+
+def train_models(X_train, y_train, X_valid, y_valid, X_test, y_test, class_weights, project_config):
+    '''
+    Train multiple machine learning models and log performance metrics.
+
+    Parameters:
+    - X_train, X_valid, X_test: Feature sets for training, validation, and testing.
+    - y_train, y_valid, y_test: Target labels for training, validation, and testing.
+    - project_config (dict): Configuration parameters for the project.
+
+    Returns:
+    - None
+    '''
+    try:
+        # Train Logistic Regression model
+        train_logistic_model(X_train, y_train, X_valid, y_valid, X_test, y_test, class_weights, project_config)
+
+        # Train Random Forest model
+        train_random_forest(X_train, y_train, X_valid, y_valid, X_test, y_test, class_weights, project_config)
+
+        # Train XGBoost model
+        train_xgb_model(X_train, y_train, X_valid, y_valid, X_test, y_test, project_config)
+
+    except Exception as e:
+        logger.error(f"An error occurred while training the models: {str(e)}")
