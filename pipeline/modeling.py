@@ -3,71 +3,100 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 import joblib
 import xgboost as xgb
+from xgboost import XGBClassifier
 from sklearn.metrics import f1_score
 import logging
 from pipeline.utils import setup_logging
 
+import joblib
+import wandb
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import f1_score
+import numpy as np
+
 logger = setup_logging()
 
-def train_logistic_model(X_train, y_train, X_valid, y_valid, X_test, y_test, class_weights, project_config):
+def train_logistic_model(X_train, y_train, X_valid, y_valid, X_test, y_test, class_weights, SWEEP_CONFIG, PROJECT_NAME):
     '''
     Train a Logistic Regression model and log performance metrics using Weights & Biases.
-
-    Parameters:
-    - X_train, X_valid, X_test: Feature sets for training, validation, and testing.
-    - y_train, y_valid, y_test: Target labels for training, validation, and testing.
-
-    Returns:
-    - None
     '''
-    features = X_train.columns
-    PROJECT_NAME = project_config['wandb']['wandb_project']
-    with wandb.init(project=PROJECT_NAME) as run:
-        config = wandb.config
-
-        params = {
-            "random_state": 13,
-            "class_weight": class_weights 
+    try:
+        logger.info("Preparing sweep configuration...")
+        configs = {
+            "method": SWEEP_CONFIG['method'],
+            "metric": {
+                "name": SWEEP_CONFIG['metric']['name'],
+                "goal": SWEEP_CONFIG['metric']['goal']
+            },
+            "parameters": {
+                "penalty": {"values": SWEEP_CONFIG['parameters']['penalty']['values']},
+                "C": {"values": SWEEP_CONFIG['parameters']['C']['values']}
             }
+        }
 
-        model = LogisticRegression(**params)
+        logger.info("Initializing W&B sweep...")
+        sweep_id = wandb.sweep(sweep=configs, project=PROJECT_NAME)
+        logger.info(f"Sweep created with ID: {sweep_id}")
 
-        model.fit(X_train, y_train)
+        def train():
+            with wandb.init(project=PROJECT_NAME) as run:
+                try:
+                    config = wandb.config
+                    logger.info(f"Starting training with config: {dict(config)}")
 
-        # Train predictions and performance
-        y_train_pred = model.predict(X_train)
-        train_f1_score = f1_score(y_train, y_train_pred)
+                    model = LogisticRegression(
+                        penalty=config['penalty'],
+                        C=config['C'],
+                        class_weight=class_weights,
+                        solver='liblinear'
+                    )
 
-        # Validation predictions and performance
-        y_valid_pred = model.predict(X_valid)
-        valid_f1_score = f1_score(y_valid, y_valid_pred)
+                    logger.info("Fitting Logistic Regression model...")
+                    model.fit(X_train, y_train)
 
-        # Test predictions and performance
-        y_preds = model.predict(X_test)
-        y_probas = model.predict_proba(X_test)
-        score = f1_score(y_test, y_preds)
+                    logger.info("Making predictions...")
+                    y_train_pred = model.predict(X_train)
+                    y_valid_pred = model.predict(X_valid)
+                    y_test_pred = model.predict(X_test)
+                    y_test_proba = model.predict_proba(X_test)
 
-        # Log performance metrics
-        print(f"F1_score Train: {round(train_f1_score, 4)}")
-        print(f"F1_score Valid: {round(valid_f1_score, 4)}")
-        print(f"F1_score Test: {round(score, 4)}")
+                    scores = {
+                        "f1_score_train": f1_score(y_train, y_train_pred),
+                        "f1_score_valid": f1_score(y_valid, y_valid_pred),
+                        "f1_score_test": f1_score(y_test, y_test_pred),
+                    }
+                    logger.info(f"Scores: {scores}")
+                    wandb.log(scores)
 
-        wandb.log({"f1_score_train": train_f1_score})
-        wandb.log({"f1_score_valid": valid_f1_score})
-        wandb.log({"f1_score": score})
+                    wandb.sklearn.plot_classifier(
+                        model, X_train, X_test, y_train, y_test,
+                        y_test_pred, y_test_proba,
+                        labels=None, model_name='LogisticRegression',
+                        feature_names=X_train.columns
+                    )
 
-        # Plot classifier performance
-        wandb.sklearn.plot_classifier(model, X_train, X_test, y_train, y_test,
-                                            y_preds, y_probas, labels= None, model_name='LogisticRegression', feature_names=features)
+                    logger.info("Saving trained model...")
+                    model_artifact = wandb.Artifact(
+                        "LogisticRegression", type="model", metadata=dict(config)
+                    )
+                    joblib.dump(model, "models/log-truck-model.pkl")
+                    model_artifact.add_file("models/log-truck-model.pkl")
+                    run.log_artifact(model_artifact)
 
-        # Save the trained model
-        model_artifact = wandb.Artifact("LogisticRegression", type="model", metadata=dict(config))
-        joblib.dump(model, "models/log-truck-model.pkl")
-        model_artifact.add_file("models/log-truck-model.pkl")
-        wandb.save("models/log-truck-model.pkl")
-        run.log_artifact(model_artifact)
+                    logger.info("Training run completed successfully.")
 
-def train_random_forest(X_train, y_train, X_valid, y_valid, X_test, y_test, class_weights, project_config):
+                except Exception as e:
+                    logger.error(f"Error in training run: {e}", exc_info=True)
+                    wandb.log({"error": str(e)})
+                    raise e  # re-raise to stop sweep agent
+
+        wandb.agent(sweep_id=sweep_id, function=train, project=PROJECT_NAME)
+
+    except Exception as e:
+        logger.error(f"Error in sweep setup: {e}", exc_info=True)
+        wandb.log({"error": str(e)})
+
+def train_random_forest(X_train, y_train, X_valid, y_valid, X_test, y_test, class_weights, SWEEP_CONFIG, PROJECT_NAME):
     '''
     Train a Random Forest classifier and log performance metrics using Weights & Biases.
 
@@ -78,52 +107,84 @@ def train_random_forest(X_train, y_train, X_valid, y_valid, X_test, y_test, clas
     Returns:
     - None
     '''
-    features = X_train.columns
-    PROJECT_NAME = project_config['wandb']['wandb_project']
+    try:
+        logger.info("Preparing sweep configuration...")
+        configs = {
+            "method": SWEEP_CONFIG['method'],
+            "metric": {
+                "name": SWEEP_CONFIG['metric']['name'],
+                "goal": SWEEP_CONFIG['metric']['goal']
+            },
+            "parameters": {
+                "n_estimators": {"values": SWEEP_CONFIG['parameters']['n_estimators']['values']},
+                "max_depth": {"values": SWEEP_CONFIG['parameters']['max_depth']['values']},
+                "min_samples_split": {"values": SWEEP_CONFIG['parameters']['min_samples_split']['values']}
+            }
+        }
 
-    with wandb.init(project=PROJECT_NAME) as run:
-        config = wandb.config
+        logger.info("Initializing W&B sweep...")
+        sweep_id = wandb.sweep(sweep=configs, project=PROJECT_NAME)
+        logger.info(f"Sweep created with ID: {sweep_id}")
 
-        model = RandomForestClassifier(n_estimators=20, class_weight=class_weights, random_state=7)
+        def train():
+            with wandb.init(project=PROJECT_NAME) as run:
+                try:
+                    config = wandb.config
+                    logger.info(f"Starting training with config: {dict(config)}")
 
-        # Train the model
-        model.fit(X_train, y_train)
+                    model = RandomForestClassifier(
+                        n_estimators=config['n_estimators'],
+                        max_depth=config['max_depth'],
+                        min_samples_split=config['min_samples_split'],
+                        class_weight=class_weights
+                    )
 
-        # Train predictions and performance
-        y_train_pred = model.predict(X_train)
-        train_f1_score = f1_score(y_train, y_train_pred)
+                    logger.info("Fitting Random Forest model...")
+                    model.fit(X_train, y_train)
 
-        # Validation predictions and performance
-        y_valid_pred = model.predict(X_valid)
-        valid_f1_score = f1_score(y_valid, y_valid_pred)
+                    logger.info("Making predictions...")
+                    y_train_pred = model.predict(X_train)
+                    y_valid_pred = model.predict(X_valid)
+                    y_test_pred = model.predict(X_test)
+                    y_test_proba = model.predict_proba(X_test)
 
-        # Test predictions and performance
-        y_preds = model.predict(X_test)
-        y_probas = model.predict_proba(X_test)
-        score = f1_score(y_test, y_preds)
+                    scores = {
+                        "f1_score_train": f1_score(y_train, y_train_pred),
+                        "f1_score_valid": f1_score(y_valid, y_valid_pred),
+                        "f1_score_test": f1_score(y_test, y_test_pred),
+                    }
+                    logger.info(f"Scores: {scores}")
+                    wandb.log(scores)
 
-        # Log performance metrics
-        print(f"F1_score Train: {round(train_f1_score, 4)}")
-        print(f"F1_score Valid: {round(valid_f1_score, 4)}")
-        print(f"F1_score Test: {round(score, 4)}")
+                    wandb.sklearn.plot_classifier(
+                        model, X_train, X_test, y_train, y_test,
+                        y_test_pred, y_test_proba,
+                        labels=None, model_name='RandomForest',
+                        feature_names=X_train.columns
+                    )
 
-        wandb.log({"f1_score_train": train_f1_score})
-        wandb.log({"f1_score_valid": valid_f1_score})
-        wandb.log({"f1_score": score})
+                    logger.info("Saving trained model...")
+                    model_artifact = wandb.Artifact(
+                        "RandomForest", type="model", metadata=dict(config)
+                    )
+                    joblib.dump(model, "models/randf-truck-model.pkl")
+                    model_artifact.add_file("models/randf-truck-model.pkl")
+                    run.log_artifact(model_artifact)
 
-        # Plot classifier performance
-        wandb.sklearn.plot_classifier(model, X_train, X_test, y_train, y_test, y_preds, y_probas, labels=None,
-                                      model_name='RandomForestClassifier', feature_names=features)
+                    logger.info("Training run completed successfully.")
 
-        # Save the trained model
-        model_artifact = wandb.Artifact("RandomForestClassifier", type="model", metadata=dict(config))
-        joblib.dump(model, "models/randomf-truck-model.pkl")
-        model_artifact.add_file("models/randomf-truck-model.pkl")
-        wandb.save("models/randomf-truck-model.pkl")
-        run.log_artifact(model_artifact)
+                except Exception as e:
+                    logger.error(f"Error in training run: {e}", exc_info=True)
+                    wandb.log({"error": str(e)})
+                    raise e  # re-raise to stop sweep agent
+
+        wandb.agent(sweep_id=sweep_id, function=train, project=PROJECT_NAME)
+    except Exception as e:
+        logger.error(f"Error in sweep setup: {e}", exc_info=True)
+        wandb.log({"error": str(e)})
 
 
-def train_xgb_model(X_train, y_train, X_valid, y_valid, X_test, y_test, project_config):
+def train_xgb_model(X_train, y_train, X_valid, y_valid, X_test, y_test, class_weights, SWEEP_CONFIG, PROJECT_NAME):
     '''
     Train an XGBoost classifier and log performance metrics using Weights & Biases.
 
@@ -134,55 +195,83 @@ def train_xgb_model(X_train, y_train, X_valid, y_valid, X_test, y_test, project_
     Returns:
     - None
     '''
-    PROJECT_NAME = project_config['wandb']['wandb_project']
-    features = X_train.columns
+    try:
+        logger.info("Preparing sweep configuration...")
+        configs = {
+            "method": SWEEP_CONFIG['method'],
+            "metric": {
+                "name": SWEEP_CONFIG['metric']['name'],
+                "goal": SWEEP_CONFIG['metric']['goal']
+            },
+            "parameters": {
+                "learning_rate": {"values": SWEEP_CONFIG['parameters']['learning_rate']['values']},
+                "max_depth_xgb": {"values": SWEEP_CONFIG['parameters']['max_depth_xgb']['values']},
+                "n_estimators_xgb": {"values": SWEEP_CONFIG['parameters']['n_estimators_xgb']['values']}
+            }
+        }
 
-    with wandb.init(project=PROJECT_NAME) as run:
-        config = wandb.config
+        logger.info("Initializing W&B sweep...")
+        sweep_id = wandb.sweep(sweep=configs, project=PROJECT_NAME)
+        logger.info(f"Sweep created with ID: {sweep_id}")
+        def train():
+            with wandb.init(project=PROJECT_NAME) as run:
+                try:
+                    config = wandb.config
+                    logger.info(f"Starting training with config: {dict(config)}")
 
-        # Convert training and test sets to DMatrix
-        dtrain = xgb.DMatrix(X_train, label=y_train)
-        dvalid = xgb.DMatrix(X_valid, label=y_valid)
-        dtest = xgb.DMatrix(X_test, label=y_test)
+                    xgbmodel = XGBClassifier(
+                        objective="binary:logistic",
+                        learning_rate=config.learning_rate,
+                        max_depth=config.max_depth_xgb,
+                        n_estimators=config.n_estimators_xgb,
+                        random_state=42 
+                    )
+                    xgbmodel.fit(
+                        X_train, y_train,
+                        eval_set=[(X_valid, y_valid)],
+                        verbose=False             
+                    )
 
-        # Train initial model
-        params = {'objective': 'multi:softmax', 'num_class': 2}
-        num_rounds = 30
-        xgbmodel = xgb.train(params, dtrain, num_rounds, evals=[(dvalid, 'validation')],
-                             early_stopping_rounds=10)
+                    logger.info("Making predictions...")
+                    y_train_pred = xgbmodel.predict(X_train)
+                    y_valid_pred = xgbmodel.predict(X_valid)
+                    y_test_pred = xgbmodel.predict(X_test)
+                    y_test_proba = xgbmodel.predict_proba(X_test)
 
-        # Train predictions and performance
-        y_train_pred = xgbmodel.predict(dtrain)
-        train_f1_score = f1_score(y_train, y_train_pred)
+                    scores = {
+                        "f1_score_train": f1_score(y_train, y_train_pred, average="weighted"),
+                        "f1_score_valid": f1_score(y_valid, y_valid_pred, average="weighted"),
+                        "f1_score_test": f1_score(y_test, y_test_pred, average="weighted"),
+                    }
+                    logger.info(f"Scores: {scores}")
+                    wandb.log(scores)
+                    wandb.sklearn.plot_classifier(
+                        xgbmodel, X_train, X_test, y_train, y_test,
+                        y_test_pred, y_test_proba,
+                        labels=None, model_name='XGBoost',
+                        feature_names=X_train.columns
+                    )
 
-        # Validation predictions and performance
-        y_valid_pred = xgbmodel.predict(dvalid)
-        valid_f1_score = f1_score(y_valid, y_valid_pred)
+                    logger.info("Saving trained model...")
+                    model_artifact = wandb.Artifact(
+                        "XGBoost", type="model", metadata=dict(config)
+                    )
+                    joblib.dump(xgbmodel, "models/xgb-truck-model.pkl")
+                    model_artifact.add_file("models/xgb-truck-model.pkl")
+                    run.log_artifact(model_artifact)
 
-        # Test predictions and performance
-        y_preds = xgbmodel.predict(dtest)
-        y_probas = xgbmodel.predict_proba(dtest)
-        score = f1_score(y_test, y_preds)
+                    logger.info("Training run completed successfully.")
 
-        # Log performance metrics
-        print(f"F1_score Train: {round(train_f1_score, 4)}")
-        print(f"F1_score Valid: {round(valid_f1_score, 4)}")
-        print(f"F1_score Test: {round(score, 4)}")
+                except Exception as e:
+                    logger.error(f"Error in training run: {e}", exc_info=True)
+                    wandb.log({"error": str(e)})
+                    raise e 
 
-        wandb.log({"f1_score_train": train_f1_score})
-        wandb.log({"f1_score_valid": valid_f1_score})
-        wandb.log({"f1_score": score})
-
-        wandb.sklearn.plot_classifier(xgbmodel, X_train, X_test, y_train, y_test, y_preds, y_probas, labels=None,
-                                      model_name='XGBoost', feature_names=features)
-
-        # Save the trained model
-        model_artifact = wandb.Artifact("XGBoost", type="model", metadata=dict(config))
-        joblib.dump(xgbmodel, "models/xgb-truck-model.pkl")
-        model_artifact.add_file("models/xgb-truck-model.pkl")
-        wandb.save("models/xgb-truck-model.pkl")
-        run.log_artifact(model_artifact)
-
+        wandb.agent(sweep_id=sweep_id, function=train, project=PROJECT_NAME)
+    except Exception as e:
+        logger.error(f"Error in sweep setup: {e}", exc_info=True)
+        wandb.log({"error": str(e)})
+    
 
 def train_models(X_train, y_train, X_valid, y_valid, X_test, y_test, class_weights, project_config):
     '''
