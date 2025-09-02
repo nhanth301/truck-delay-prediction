@@ -7,6 +7,8 @@ __pycache__/
 *.so
 wandb
 files
+artifacts
+models
 # Distribution / packaging
 .Python
 build/
