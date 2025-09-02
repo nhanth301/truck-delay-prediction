@@ -29,7 +29,7 @@ hopsworks:
 
 wandb:
   wandb_api_key: ${WANDB_API_KEY}
-  wandb_project: 'eta-classification'
+  wandb_project: 'TEST_PROJECT'
 
 split_date_ranges:
   train_end_date: '2019-01-30'
@@ -198,3 +198,36 @@ data_descriptions:
     {"name": 'is_midnight', "description": "binary variable to denote if it was midnight"}
 
   ]
+
+
+sweep:
+  method: grid
+  metric:
+    name: f1_score
+    goal: maximize
+
+  parameters:
+    model:
+      values: ["random_forest", "logistic_regression", "xgboost"]
+
+    # --- Random Forest ---
+    n_estimators:
+      values: [8, 12, 16, 20]
+    max_depth:
+      values: [null, 5, 10, 15, 20]
+    min_samples_split:
+      values: [2, 4, 8, 12]
+
+    # --- Logistic Regression ---
+    penalty:
+      values: ["l1", "l2"]
+    C:
+      values: [0.01, 0.1, 1, 10]
+
+    # --- XGBoost ---
+    learning_rate:
+      values: [0.01, 0.1, 0.2]
+    max_depth_xgb:
+      values: [3, 5, 7]
+    n_estimators_xgb:
+      values: [50, 100, 200]
