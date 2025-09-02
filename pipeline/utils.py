@@ -5,6 +5,8 @@ import pandas as pd
 import os
 import wandb
 import numpy as np
+from dotenv import load_dotenv
+
 
 def setup_logging():
     logger=logging.getLogger(__name__)
@@ -26,7 +28,7 @@ def setup_logging():
     
     return logger
 
-logger = setup_logging()
+# logger = setup_logging()
 
 def load_config(file_path='config.yaml'):
     """
@@ -38,8 +40,12 @@ def load_config(file_path='config.yaml'):
     Returns:
     dict: The configuration as a dictionary.
     """
+    load_dotenv()
     with open(file_path, 'r') as config_file:
-        config = yaml.safe_load(config_file)
+        raw_content = config_file.read()
+        expanded_content = os.path.expandvars(raw_content)
+        config = yaml.safe_load(expanded_content)
+        
     return config
 
 def fetch_data(config, feature_group_name):
