@@ -8,6 +8,7 @@ import numpy as np
 from dotenv import load_dotenv
 
 
+
 def setup_logging():
     logger=logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
@@ -28,7 +29,7 @@ def setup_logging():
     
     return logger
 
-# logger = setup_logging()
+logger = setup_logging()
 
 def load_config(file_path='config.yaml'):
     """
