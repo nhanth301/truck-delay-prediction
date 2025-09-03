@@ -9,6 +9,7 @@ wandb
 files
 artifacts
 models
+Streaming_data
 # Distribution / packaging
 .Python
 build/
