@@ -1,2 +1,3 @@
-# truck-delay-prediction
-End2End project
+# Truck Delay Prediction 
+
+![System Architecture](imgs/pl.png)  
