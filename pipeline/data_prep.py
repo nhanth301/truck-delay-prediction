@@ -49,10 +49,10 @@ def create_mysql_connection(config):
     - connection (pymysql.connections.Connection): MySQL connection object.
     '''
     try:
-        host = config['mysql']['host']
-        user = config['mysql']['user']
-        password = config['mysql']['password']
-        database = config['mysql']['database']
+        host = str(config['mysql']['host'])
+        user = str(config['mysql']['user'])
+        password = str(config['mysql']['password'])
+        database = str(config['mysql']['database'])
 
         # Establish a connection to the MySQL database
         connection = pymysql.connect(
