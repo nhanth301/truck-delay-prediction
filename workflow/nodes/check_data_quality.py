@@ -53,7 +53,16 @@ def check_data_quality(state: State):
         suite = run_data_quality_check(ref_df, state['new_data'][key])
         new_data_quality[key] = assert_quality_passed(suite)
 
-    return {"new_data_quality": new_data_quality}
+    should_continue = any(new_data_quality.values())
+
+    return {"new_data_quality": new_data_quality,
+            'should_continue': should_continue}
+
+def data_quality_router(state: State):
+    if state['should_continue']:
+        return 'continue'
+    return 'END'
+
     
 
 
