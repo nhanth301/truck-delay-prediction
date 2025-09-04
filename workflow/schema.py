@@ -8,3 +8,4 @@ class State(TypedDict, total=False):
     new_data: Dict[str, pd.DataFrame]
     new_data_status: Dict[str, bool]
     new_data_quality: Dict[str, bool]   
+    update_status: Dict[str, str]
