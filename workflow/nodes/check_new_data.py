@@ -28,7 +28,13 @@ def check_new_data(state: State):
     new_truck_schedule_df = filter(truck_schedule_df,tracking_status['date'])
     new_city_weather_df = filter(city_weather_df,tracking_status['date'])
     new_route_weather_df = filter(route_weather_df,tracking_status['date'],True)
-
+    
+    status = {
+        'traffic': len(new_traffic_df) > 0,
+        'truck_schedule': len(new_truck_schedule_df) > 0,
+        'city_weather': len(city_weather_df) > 0,
+        'route_weather': len(route_weather_df) > 0
+    }
     print(f'traffic: {len(new_traffic_df)} rows added!!')
     print(f'truck_schedule: {len(new_truck_schedule_df)} rows added!!')
     print(f'city_weather: {len(new_city_weather_df)} rows added!!')
@@ -42,7 +48,8 @@ def check_new_data(state: State):
                              'truck_schedule': new_truck_schedule_df, 
                              'city_weather': new_city_weather_df, 
                              'route_weather': new_route_weather_df},
-                'should_continue': True}
+                'should_continue': True,
+                'new_data_status': status}
 
 def new_data_router(state: State):
     if state['should_continue']:
