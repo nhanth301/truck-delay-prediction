@@ -41,8 +41,13 @@ def check_new_data(state: State):
         return {'new_data': {'traffic' : new_traffic_df, 
                              'truck_schedule': new_truck_schedule_df, 
                              'city_weather': new_city_weather_df, 
-                             'route_weather': new_route_weather_df}}
+                             'route_weather': new_route_weather_df},
+                'should_continue': True}
 
+def new_data_router(state: State):
+    if state['should_continue']:
+        return 'continue'
+    return 'END'
 
     
 
