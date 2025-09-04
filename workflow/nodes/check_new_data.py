@@ -35,7 +35,7 @@ def check_new_data(state: State):
     print(f'route_weather: {len(new_route_weather_df)} rows added!!')
 
     if all(len(df) == 0 for df in [new_traffic_df, new_truck_schedule_df, new_city_weather_df, new_route_weather_df]):
-        return {'continue': False}
+        return {'should_continue': False}
 
     else:
         return {'new_data': {'traffic' : new_traffic_df, 
