@@ -50,6 +50,7 @@ def check_data_quality(state: State):
         if fg not in fg_to_key:
             raise ValueError(f"Unexpected feature group: {fg}")
         key = fg_to_key[fg]
+        print('Key data quality check:',key)
         suite = run_data_quality_check(ref_df, state['new_data'][key])
         new_data_quality[key] = assert_quality_passed(suite)
 
