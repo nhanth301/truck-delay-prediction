@@ -1,17 +1,30 @@
 from pipeline.data_prep import create_postgres_connection, read_data, create_mysql_connection
 from workflow.schema import State
-
+import pandas as pd
 
 def init_db_conn(config):
     postgres_conn = create_postgres_connection(config)
     mysql_conn = create_mysql_connection(config)
     return postgres_conn, mysql_conn
 
-def filter(df,date,is_route_weather=False):
+def ensure_datetime(df, col):
+    """Convert column to pandas datetime64[ns] safely"""
+    if col in df.columns:
+        df[col] = pd.to_datetime(df[col])
+    return df
+
+def filter(df, date, is_route_weather=False, is_schedule=False):
+    ts = pd.to_datetime(date)  
+    
     if is_route_weather:
-        return df[df['Date'] > date]
+        df = ensure_datetime(df, 'Date')
+        return df[df['Date'] > ts]
+    elif is_schedule:
+        df = ensure_datetime(df, 'departure_date')
+        return df[df['departure_date'] > ts]
     else:
-        return df[df['date'] > date]
+        df = ensure_datetime(df, 'date')
+        return df[df['date'] > ts]
 
 def check_new_data(state: State):
     postgres_conn, mysql_conn = init_db_conn(state['config'])
@@ -25,9 +38,9 @@ def check_new_data(state: State):
     route_weather_df = read_data(postgres_conn,postgres_tables[0])
 
     new_traffic_df = filter(traffic_df,tracking_status['date'])
-    new_truck_schedule_df = filter(truck_schedule_df,tracking_status['date'])
+    new_truck_schedule_df = filter(truck_schedule_df,tracking_status['date'],is_schedule=True)
     new_city_weather_df = filter(city_weather_df,tracking_status['date'])
-    new_route_weather_df = filter(route_weather_df,tracking_status['date'],True)
+    new_route_weather_df = filter(route_weather_df,tracking_status['date'],is_route_weather=True)
     
     status = {
         'traffic': len(new_traffic_df) > 0,
