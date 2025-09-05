@@ -4,17 +4,34 @@ from evidently.tests.base_test import generate_column_tests
 from evidently.tests import *
 import json
 from workflow.schema import State
-
-def fetch_fs(config):
+import hopsworks
+import pandas as pd 
+def fetch_fs(config,fs):
     fgs = [
         "truck_schedule_details_fg",
         "traffic_details_fg",
         "route_weather_details_fg",
         "city_weather_details_fg",
     ]
-    return {fg: fetch_data(config, fg) for fg in fgs}
+    return {fg: fetch_data(config,fs,fg) for fg in fgs}
+
+def normalize_datetime(df: pd.DataFrame) -> pd.DataFrame:
+    """Ensure all datetime columns are datetime64[ns] without timezone"""
+    for col in df.select_dtypes(include=["datetimetz", "datetime64[ns, UTC]", "datetime64[us, UTC]"]).columns:
+        df[col] = pd.to_datetime(df[col], errors="coerce").dt.tz_localize(None)
+    for col in df.select_dtypes(include=["object"]).columns:
+        try:
+            parsed = pd.to_datetime(df[col], errors="raise")
+            if parsed.notna().any():
+                df[col] = parsed.dt.tz_localize(None)
+        except Exception:
+            pass
+    return df
 
 def run_data_quality_check(reference_data, current_data):
+    reference_data = normalize_datetime(reference_data.copy())
+    current_data = normalize_datetime(current_data.copy())
+
     tests = TestSuite(
         tests=[
             TestNumberOfRowsWithMissingValues(),
@@ -36,7 +53,9 @@ def assert_quality_passed(suite):
     return True
 
 def check_data_quality(state: State):
-    fgs_data = fetch_fs(state['config'])
+    project = hopsworks.login(api_key_value=state['config']['hopsworks']['api_key'])
+    fs = project.get_feature_store()
+    fgs_data = fetch_fs(state['config'],fs)
 
     fg_to_key = {
         "truck_schedule_details_fg": "truck_schedule",
