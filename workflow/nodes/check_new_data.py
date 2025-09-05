@@ -1,11 +1,7 @@
-from pipeline.data_prep import create_postgres_connection, read_data, create_mysql_connection
+from pipeline.data_prep import read_data
 from workflow.schema import State
 import pandas as pd
 
-def init_db_conn(config):
-    postgres_conn = create_postgres_connection(config)
-    mysql_conn = create_mysql_connection(config)
-    return postgres_conn, mysql_conn
 
 def ensure_datetime(df, col):
     """Convert column to pandas datetime64[ns] safely, drop tz"""
@@ -27,7 +23,7 @@ def filter(df, date, is_route_weather=False, is_schedule=False):
         return df[df['date'] > ts]
 
 def check_new_data(state: State):
-    postgres_conn, mysql_conn = init_db_conn(state['config'])
+    postgres_conn, mysql_conn = state['db_conn']['pg'], state['db_conn']['mysql']
     tracking_status = read_data(postgres_conn, '"CONSTANT"').iloc[0].to_dict()
     mysql_tables = ['traffic_details', 'truck_schedule_data', 'city_weather']
     postgres_tables = ['routes_weather']
@@ -65,7 +61,8 @@ def check_new_data(state: State):
                 'route_weather': new_route_weather_df
             },
             'should_continue': True,
-            'new_data_status': status
+            'new_data_status': status,
+            'constant': tracking_status
         }
 
 def new_data_router(state: State):

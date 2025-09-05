@@ -1,19 +1,10 @@
-from pipeline.utils import fetch_data
 from evidently.test_suite import TestSuite
 from evidently.tests.base_test import generate_column_tests
 from evidently.tests import *
 import json
 from workflow.schema import State
-import hopsworks
 import pandas as pd 
-def fetch_fs(config,fs):
-    fgs = [
-        "truck_schedule_details_fg",
-        "traffic_details_fg",
-        "route_weather_details_fg",
-        "city_weather_details_fg",
-    ]
-    return {fg: fetch_data(config,fs,fg) for fg in fgs}
+
 
 def normalize_datetime(df: pd.DataFrame) -> pd.DataFrame:
     """Ensure all datetime columns are datetime64[ns] without timezone"""
@@ -53,9 +44,7 @@ def assert_quality_passed(suite):
     return True
 
 def check_data_quality(state: State):
-    project = hopsworks.login(api_key_value=state['config']['hopsworks']['api_key'])
-    fs = project.get_feature_store()
-    fgs_data = fetch_fs(state['config'],fs)
+    fgs_data = state['feature_groups_data']
 
     fg_to_key = {
         "truck_schedule_details_fg": "truck_schedule",
@@ -67,7 +56,7 @@ def check_data_quality(state: State):
     new_data_quality = {}
     for fg, ref_df in fgs_data.items():
         if fg not in fg_to_key:
-            raise ValueError(f"Unexpected feature group: {fg}")
+            continue
         key = fg_to_key[fg]
         print('Key data quality check:',key)
         suite = run_data_quality_check(ref_df, state['new_data'][key])
