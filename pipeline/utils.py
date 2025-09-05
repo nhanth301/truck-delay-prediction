@@ -49,7 +49,7 @@ def load_config(file_path='config.yaml'):
         
     return config
 
-def fetch_data(config, feature_group_name):
+def fetch_data(config, fs, feature_group_name):
     """
     Fetch data from a feature group in Hopsworks.
     
@@ -60,8 +60,6 @@ def fetch_data(config, feature_group_name):
     pandas.DataFrame: The data as a pandas DataFrame.
     """
 
-    project = hopsworks.login(api_key_value=config['hopsworks']['api_key'])
-    fs = project.get_feature_store()
 
     try:
         feature_group = fs.get_feature_group(
