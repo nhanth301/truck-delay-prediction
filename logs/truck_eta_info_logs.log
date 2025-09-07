@@ -1,0 +1,76 @@
+2025-09-07 16:46:09,523:INFO:pipeline.utils:check_new_data:97:Traffic: 56476 new rows detected
+2025-09-07 16:46:09,523:INFO:pipeline.utils:check_new_data:97:Traffic: 56476 new rows detected
+2025-09-07 16:46:09,523:INFO:pipeline.utils:check_new_data:97:Traffic: 56476 new rows detected
+2025-09-07 16:46:09,523:INFO:pipeline.utils:check_new_data:97:Traffic: 56476 new rows detected
+2025-09-07 16:46:09,524:INFO:pipeline.utils:check_new_data:98:Truck schedule: 0 new rows detected
+2025-09-07 16:46:09,524:INFO:pipeline.utils:check_new_data:98:Truck schedule: 0 new rows detected
+2025-09-07 16:46:09,524:INFO:pipeline.utils:check_new_data:98:Truck schedule: 0 new rows detected
+2025-09-07 16:46:09,524:INFO:pipeline.utils:check_new_data:98:Truck schedule: 0 new rows detected
+2025-09-07 16:46:09,524:INFO:pipeline.utils:check_new_data:99:City weather: 1200 new rows detected
+2025-09-07 16:46:09,524:INFO:pipeline.utils:check_new_data:99:City weather: 1200 new rows detected
+2025-09-07 16:46:09,524:INFO:pipeline.utils:check_new_data:99:City weather: 1200 new rows detected
+2025-09-07 16:46:09,524:INFO:pipeline.utils:check_new_data:99:City weather: 1200 new rows detected
+2025-09-07 16:46:09,524:INFO:pipeline.utils:check_new_data:100:Route weather: 9408 new rows detected
+2025-09-07 16:46:09,524:INFO:pipeline.utils:check_new_data:100:Route weather: 9408 new rows detected
+2025-09-07 16:46:09,524:INFO:pipeline.utils:check_new_data:100:Route weather: 9408 new rows detected
+2025-09-07 16:46:09,524:INFO:pipeline.utils:check_new_data:100:Route weather: 9408 new rows detected
+2025-09-07 16:46:09,634:INFO:pipeline.utils:check_data_quality:120:Running data quality check for: truck_schedule
+2025-09-07 16:46:09,634:INFO:pipeline.utils:check_data_quality:120:Running data quality check for: truck_schedule
+2025-09-07 16:46:09,634:INFO:pipeline.utils:check_data_quality:120:Running data quality check for: truck_schedule
+2025-09-07 16:46:09,634:INFO:pipeline.utils:check_data_quality:120:Running data quality check for: truck_schedule
+2025-09-07 16:46:10,011:ERROR:pipeline.utils:assert_quality_passed:86:❌ Data Quality Fail: ['Number of Duplicate Columns']
+2025-09-07 16:46:10,011:ERROR:pipeline.utils:assert_quality_passed:86:❌ Data Quality Fail: ['Number of Duplicate Columns']
+2025-09-07 16:46:10,011:ERROR:pipeline.utils:assert_quality_passed:86:❌ Data Quality Fail: ['Number of Duplicate Columns']
+2025-09-07 16:46:10,011:ERROR:pipeline.utils:assert_quality_passed:86:❌ Data Quality Fail: ['Number of Duplicate Columns']
+2025-09-07 16:46:10,013:INFO:pipeline.utils:check_data_quality:120:Running data quality check for: traffic
+2025-09-07 16:46:10,013:INFO:pipeline.utils:check_data_quality:120:Running data quality check for: traffic
+2025-09-07 16:46:10,013:INFO:pipeline.utils:check_data_quality:120:Running data quality check for: traffic
+2025-09-07 16:46:10,013:INFO:pipeline.utils:check_data_quality:120:Running data quality check for: traffic
+2025-09-07 16:46:23,504:INFO:pipeline.utils:assert_quality_passed:89:✅ Data Quality Passed
+2025-09-07 16:46:23,504:INFO:pipeline.utils:assert_quality_passed:89:✅ Data Quality Passed
+2025-09-07 16:46:23,504:INFO:pipeline.utils:assert_quality_passed:89:✅ Data Quality Passed
+2025-09-07 16:46:23,504:INFO:pipeline.utils:assert_quality_passed:89:✅ Data Quality Passed
+2025-09-07 16:46:23,504:INFO:pipeline.utils:check_data_quality:120:Running data quality check for: route_weather
+2025-09-07 16:46:23,504:INFO:pipeline.utils:check_data_quality:120:Running data quality check for: route_weather
+2025-09-07 16:46:23,504:INFO:pipeline.utils:check_data_quality:120:Running data quality check for: route_weather
+2025-09-07 16:46:23,504:INFO:pipeline.utils:check_data_quality:120:Running data quality check for: route_weather
+2025-09-07 16:46:26,889:INFO:pipeline.utils:assert_quality_passed:89:✅ Data Quality Passed
+2025-09-07 16:46:26,889:INFO:pipeline.utils:assert_quality_passed:89:✅ Data Quality Passed
+2025-09-07 16:46:26,889:INFO:pipeline.utils:assert_quality_passed:89:✅ Data Quality Passed
+2025-09-07 16:46:26,889:INFO:pipeline.utils:assert_quality_passed:89:✅ Data Quality Passed
+2025-09-07 16:46:26,889:INFO:pipeline.utils:check_data_quality:120:Running data quality check for: city_weather
+2025-09-07 16:46:26,889:INFO:pipeline.utils:check_data_quality:120:Running data quality check for: city_weather
+2025-09-07 16:46:26,889:INFO:pipeline.utils:check_data_quality:120:Running data quality check for: city_weather
+2025-09-07 16:46:26,889:INFO:pipeline.utils:check_data_quality:120:Running data quality check for: city_weather
+2025-09-07 16:46:27,512:INFO:pipeline.utils:assert_quality_passed:89:✅ Data Quality Passed
+2025-09-07 16:46:27,512:INFO:pipeline.utils:assert_quality_passed:89:✅ Data Quality Passed
+2025-09-07 16:46:27,512:INFO:pipeline.utils:assert_quality_passed:89:✅ Data Quality Passed
+2025-09-07 16:46:27,512:INFO:pipeline.utils:assert_quality_passed:89:✅ Data Quality Passed
+2025-09-07 16:46:27,513:INFO:pipeline.utils:update_feature_store:91:⏭️ Skipped update for truck_schedule (quality fail or no new data)
+2025-09-07 16:46:27,513:INFO:pipeline.utils:update_feature_store:91:⏭️ Skipped update for truck_schedule (quality fail or no new data)
+2025-09-07 16:46:27,513:INFO:pipeline.utils:update_feature_store:91:⏭️ Skipped update for truck_schedule (quality fail or no new data)
+2025-09-07 16:46:27,513:INFO:pipeline.utils:update_feature_store:91:⏭️ Skipped update for truck_schedule (quality fail or no new data)
+2025-09-07 16:47:24,276:INFO:pipeline.utils:update_fs:23:✅ Inserted 56476 rows into traffic_details_fg
+2025-09-07 16:47:24,276:INFO:pipeline.utils:update_fs:23:✅ Inserted 56476 rows into traffic_details_fg
+2025-09-07 16:47:24,276:INFO:pipeline.utils:update_fs:23:✅ Inserted 56476 rows into traffic_details_fg
+2025-09-07 16:47:24,276:INFO:pipeline.utils:update_fs:23:✅ Inserted 56476 rows into traffic_details_fg
+2025-09-07 16:47:48,983:INFO:pipeline.utils:update_fs:23:✅ Inserted 9408 rows into route_weather_details_fg
+2025-09-07 16:47:48,983:INFO:pipeline.utils:update_fs:23:✅ Inserted 9408 rows into route_weather_details_fg
+2025-09-07 16:47:48,983:INFO:pipeline.utils:update_fs:23:✅ Inserted 9408 rows into route_weather_details_fg
+2025-09-07 16:47:48,983:INFO:pipeline.utils:update_fs:23:✅ Inserted 9408 rows into route_weather_details_fg
+2025-09-07 16:48:25,164:INFO:pipeline.utils:update_fs:23:✅ Inserted 1200 rows into city_weather_details_fg
+2025-09-07 16:48:25,164:INFO:pipeline.utils:update_fs:23:✅ Inserted 1200 rows into city_weather_details_fg
+2025-09-07 16:48:25,164:INFO:pipeline.utils:update_fs:23:✅ Inserted 1200 rows into city_weather_details_fg
+2025-09-07 16:48:25,164:INFO:pipeline.utils:update_fs:23:✅ Inserted 1200 rows into city_weather_details_fg
+2025-09-07 16:55:52,918:INFO:pipeline.utils:rebuild_merged_feature_group:55:🔄 Rebuilding merged feature group with 12308 rows...
+2025-09-07 16:55:52,918:INFO:pipeline.utils:rebuild_merged_feature_group:55:🔄 Rebuilding merged feature group with 12308 rows...
+2025-09-07 16:55:52,918:INFO:pipeline.utils:rebuild_merged_feature_group:55:🔄 Rebuilding merged feature group with 12308 rows...
+2025-09-07 16:55:52,918:INFO:pipeline.utils:rebuild_merged_feature_group:55:🔄 Rebuilding merged feature group with 12308 rows...
+2025-09-07 16:56:25,822:INFO:pipeline.utils:update_fs:23:✅ Inserted 12308 rows into final_data
+2025-09-07 16:56:25,822:INFO:pipeline.utils:update_fs:23:✅ Inserted 12308 rows into final_data
+2025-09-07 16:56:25,822:INFO:pipeline.utils:update_fs:23:✅ Inserted 12308 rows into final_data
+2025-09-07 16:56:25,822:INFO:pipeline.utils:update_fs:23:✅ Inserted 12308 rows into final_data
+2025-09-07 16:57:06,690:ERROR:pipeline.utils:check_data_drift:84:❌ Data drift detected between last 7 days and historical data.
+2025-09-07 16:57:06,690:ERROR:pipeline.utils:check_data_drift:84:❌ Data drift detected between last 7 days and historical data.
+2025-09-07 16:57:06,690:ERROR:pipeline.utils:check_data_drift:84:❌ Data drift detected between last 7 days and historical data.
+2025-09-07 16:57:06,690:ERROR:pipeline.utils:check_data_drift:84:❌ Data drift detected between last 7 days and historical data.

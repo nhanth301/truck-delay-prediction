@@ -104,4 +104,4 @@ def data_drift_router(state: State) -> str:
     Returns:
         str: 'trigger_retrain' if drift detected, otherwise 'proceed'.
     """
-    return "trigger_retrain" if state["data_drifted"]["drifted"] else "proceed"
+    return "trigger_retrain" if state["data_drift"]["drifted"] else "proceed"
