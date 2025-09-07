@@ -16,7 +16,7 @@ The pipeline automates the full lifecycle: raw data ingestion → feature engine
 
 ## 🗂️ Architecture
 
-![Pipeline Workflow](imgs/pl.png)  
+![Pipeline Workflow](imgs/pipeline.png)  
 *Figure 1: End-to-end architecture from raw data → feature store → training → deployment.*
 
 ---
