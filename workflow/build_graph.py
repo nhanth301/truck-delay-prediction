@@ -3,6 +3,7 @@ from workflow.nodes.check_data_quality import check_data_quality, data_quality_r
 from workflow.nodes.update_fs import update_feature_store, is_the_first_day_of_week
 from workflow.nodes.check_data_drift import check_data_drift, data_drift_router
 from workflow.nodes.check_model_drift import check_model_drift, model_drift_router
+from workflow.nodes.send_email import send_email
 from workflow.nodes.retraining import train
 from workflow.nodes.init import init_node
 from langgraph.graph import StateGraph, START, END
@@ -19,24 +20,24 @@ def create_graph():
     builder.add_node('detect_data_drift', check_data_drift)
     builder.add_node('detect_model_drift', check_model_drift)
     builder.add_node('retrain_model', train)
-
+    builder.add_node('email_notification',send_email)
     builder.add_conditional_edges('validate_new_data', 
                                   new_data_router,
                                   {
                                       'proceed': 'assess_data_quality',
-                                      'terminate': END
+                                      'terminate': 'email_notification'
                                   })
     builder.add_conditional_edges('assess_data_quality',
                                   data_quality_router,
                                   {
                                       'proceed': 'update_feature_group',
-                                      'terminate': END
+                                      'terminate': 'email_notification'
                                   })
     builder.add_conditional_edges('update_feature_group',
                                   is_the_first_day_of_week,
                                   {
                                       'proceed': 'detect_data_drift',
-                                      'terminate': END
+                                      'terminate': 'email_notification'
                                   })
     builder.add_conditional_edges('detect_data_drift',
                                   data_drift_router,
@@ -45,21 +46,23 @@ def create_graph():
                                       'trigger_retrain': 'retrain_model'
                                   })
     builder.add_conditional_edges('detect_model_drift',
-                                  data_drift_router,
+                                  model_drift_router,
                                   {
                                       'trigger_retrain': 'retrain_model',
-                                      'terminate': END
+                                      'terminate': 'email_notification'
                                   })
     builder.add_edge(START, 'initialize_pipeline')
     builder.add_edge('initialize_pipeline', 'validate_new_data')
+    builder.add_edge('retrain_model','email_notification')
+    builder.add_edge('email_notification',END)
     return builder.compile()
 
 if __name__ == '__main__':
     graph = create_graph()
-    # mermaid_syntax = graph.get_graph().draw_mermaid()
-    # draw_mermaid_png(mermaid_syntax, output_file_path="my_langgraph_graph.png")
-    config = load_config()
-    graph.invoke({'config': config})
+    mermaid_syntax = graph.get_graph().draw_mermaid()
+    draw_mermaid_png(mermaid_syntax, output_file_path="my_langgraph_graph.png")
+    # config = load_config()
+    # graph.invoke({'config': config})
     
 
 

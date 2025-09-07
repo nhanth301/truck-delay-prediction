@@ -11,6 +11,10 @@ mysql:
   password: ${MYSQL_PASSWORD}
   database: ${MYSQL_DB}
 
+google:
+  id: ${CLIENT_ID}
+  secret:  ${CLIENT_SECRET}
+
 table_names:
   routes_data: 'routes_details'
   route_weather: 'routes_weather'
