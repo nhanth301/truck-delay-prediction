@@ -84,6 +84,6 @@ The pipeline is orchestrated using **LangGraph**, with the following steps:
 - Deployment via **Streamlit** UI for predictions.  
 
 📷 *Streamlit UI Demo:*  
-![Streamlit Demo](./docs/streamlit_demo.png)
+![Streamlit Demo](imgs/image.png)
 
 ---

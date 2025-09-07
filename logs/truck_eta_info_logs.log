@@ -74,3 +74,12 @@
 2025-09-07 16:57:06,690:ERROR:pipeline.utils:check_data_drift:84:❌ Data drift detected between last 7 days and historical data.
 2025-09-07 16:57:06,690:ERROR:pipeline.utils:check_data_drift:84:❌ Data drift detected between last 7 days and historical data.
 2025-09-07 16:57:06,690:ERROR:pipeline.utils:check_data_drift:84:❌ Data drift detected between last 7 days and historical data.
+2025-09-07 17:25:24,141:INFO:pipeline.utils:fetch_best_model:160:artifact_dir: /home/thnhan301/Documents/PROJECT/GIT/truck-delay-prediction/artifacts/XGBoost:v2
+2025-09-07 17:27:47,913:INFO:pipeline.utils:fetch_best_model:160:artifact_dir: /home/thnhan301/Documents/PROJECT/GIT/truck-delay-prediction/artifacts/XGBoost:v2
+2025-09-07 17:41:44,453:INFO:pipeline.utils:fetch_best_model:160:artifact_dir: /home/thnhan301/Documents/PROJECT/GIT/truck-delay-prediction/artifacts/XGBoost:v2
+2025-09-07 17:45:15,364:INFO:pipeline.utils:fetch_best_model:160:artifact_dir: /home/thnhan301/Documents/PROJECT/GIT/truck-delay-prediction/artifacts/XGBoost:v2
+2025-09-07 17:50:09,052:INFO:pipeline.utils:fetch_best_model:160:artifact_dir: /home/thnhan301/Documents/PROJECT/GIT/truck-delay-prediction/artifacts/XGBoost:v2
+2025-09-07 17:54:52,626:INFO:pipeline.utils:fetch_best_model:160:artifact_dir: /home/thnhan301/Documents/PROJECT/GIT/truck-delay-prediction/artifacts/XGBoost:v2
+2025-09-07 17:57:43,293:INFO:pipeline.utils:fetch_best_model:160:artifact_dir: /home/thnhan301/Documents/PROJECT/GIT/truck-delay-prediction/artifacts/XGBoost:v2
+2025-09-07 18:06:39,151:INFO:pipeline.utils:fetch_best_model:160:artifact_dir: /home/thnhan301/Documents/PROJECT/GIT/truck-delay-prediction/artifacts/XGBoost:v2
+2025-09-07 18:12:02,924:INFO:pipeline.utils:fetch_best_model:160:artifact_dir: /home/thnhan301/Documents/PROJECT/GIT/truck-delay-prediction/artifacts/XGBoost:v2
