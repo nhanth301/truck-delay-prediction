@@ -76,36 +76,28 @@ def fetch_data(config, fs, feature_group_name):
 
 
 def split_data_by_date(final_merge, config):
-    """
-    This function splits the data into training, validation, and test sets based on the given date ranges.
-    
-    Parameters:
-    final_merge (DataFrame): The merged DataFrame.
-    config (dict): The configuration dictionary.
-    
-    Returns:
-    tuple: A tuple containing six DataFrames (X_train, y_train, X_valid, y_valid, X_test, y_test).
-    """
     try:
-        # Specify date ranges
-        train_end_date = config['split_date_ranges']['train_end_date']
-        test_start_date = config['split_date_ranges']['test_start_date']
-    
+        # Convert config dates to timezone-aware (UTC)
+        train_end_date = pd.to_datetime(config['split_date_ranges']['train_end_date']).tz_localize("UTC")
+        test_start_date = pd.to_datetime(config['split_date_ranges']['test_start_date']).tz_localize("UTC")
 
-        # Splitting the data into training, validation, and test sets based on date
-        train_df = final_merge[final_merge['estimated_arrival'] <= pd.to_datetime(train_end_date)]
+        # Ensure dataframe datetime is UTC too
+        final_merge['estimated_arrival'] = pd.to_datetime(final_merge['estimated_arrival']).dt.tz_convert("UTC")
+
+        # Splitting
+        train_df = final_merge[final_merge['estimated_arrival'] <= train_end_date]
         validation_df = final_merge[
-            (final_merge['estimated_arrival'] > pd.to_datetime(train_end_date)) &
-            (final_merge['estimated_arrival'] <= pd.to_datetime(test_start_date))
+            (final_merge['estimated_arrival'] > train_end_date) &
+            (final_merge['estimated_arrival'] <= test_start_date)
         ]
-        test_df = final_merge[final_merge['estimated_arrival'] > pd.to_datetime(test_start_date)]
-
+        test_df = final_merge[final_merge['estimated_arrival'] > test_start_date]
 
         return train_df, validation_df, test_df
 
     except Exception as e:
-        # Log the error
         logger.error(f"An error occurred during data splitting: {str(e)}")
+        return None
+
 
 
 def calculate_class_weights(y_train):
@@ -194,10 +186,7 @@ def process_categorical_data(data, encoder, encode_columns):
         encoded_features = list(encoder.get_feature_names_out(encode_columns))
         data[encoded_features] = encoder.transform(data[encode_columns])
         print("One-Hot Encoding completed successfully.")
-
-
         print("Original categorical features dropped successfully.")
-
         return data
 
     except Exception as e:
@@ -214,28 +203,29 @@ def scale_data(data, scaler, cts_cols):
         print(f"An error occurred during data scaling: {str(e)}")
 
 def processing_new_data(config, data, scaler, encoder):
-
     try:
         columns_to_drop_nulls = config['features']['columns_to_drop_null_values']
-        encode_columns = config['features']['encode_column_names']
-        cts_cols = config['features']['cts_col_names']
-        cat_cols = config['features']['cat_col_names']
+        encode_columns = config['features']['encode_column_names']  
+        cts_cols = config['features']['cts_col_names']              
+        cat_cols = config['features']['cat_col_names']              
         target = config['features']['target']
 
         data = drop_null_values(data, columns_to_drop_nulls)
-
         fill_missing_values_with_mode(data, 'load_capacity_pounds', 3000)
 
         data = process_categorical_data(data, encoder, encode_columns)
 
         data = scale_data(data, scaler, cts_cols)
 
-        X_test = data[cts_cols + cat_cols]
-        y_test = data[target]
+        onehot_cols = encoder.get_feature_names_out(encode_columns)
+        keep_cat_cols = [c for c in cat_cols if c not in encode_columns]  
 
-        X_test = X_test.drop(encode_columns, axis=1)
+        feature_cols = list(cts_cols) + keep_cat_cols + list(onehot_cols)
+        y_test = data[target]
+        X_test = data[feature_cols]
 
         return X_test, y_test
 
     except Exception as e:
         print(f"An error occurred while processing the data: {str(e)}")
+        return None, None

@@ -13,3 +13,6 @@ class State(TypedDict, total=False):
     db_conn: Any
     feature_store: Any
     feature_groups_data: Dict[str, pd.DataFrame]
+    data_drift: Dict[str, Any]
+    model_drift: Dict[str, Any]
+    final_data: pd.DataFrame

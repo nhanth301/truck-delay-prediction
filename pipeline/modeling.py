@@ -63,7 +63,7 @@ def train_logistic_model(X_train, y_train, X_valid, y_valid, X_test, y_test, cla
                     scores = {
                         "f1_score_train": f1_score(y_train, y_train_pred),
                         "f1_score_valid": f1_score(y_valid, y_valid_pred),
-                        "f1_score_test": f1_score(y_test, y_test_pred),
+                        "f1_score": f1_score(y_test, y_test_pred),
                     }
                     logger.info(f"Scores: {scores}")
                     wandb.log(scores)
@@ -151,7 +151,7 @@ def train_random_forest(X_train, y_train, X_valid, y_valid, X_test, y_test, clas
                     scores = {
                         "f1_score_train": f1_score(y_train, y_train_pred),
                         "f1_score_valid": f1_score(y_valid, y_valid_pred),
-                        "f1_score_test": f1_score(y_test, y_test_pred),
+                        "f1_score": f1_score(y_test, y_test_pred),
                     }
                     logger.info(f"Scores: {scores}")
                     wandb.log(scores)
@@ -241,7 +241,7 @@ def train_xgb_model(X_train, y_train, X_valid, y_valid, X_test, y_test, class_we
                     scores = {
                         "f1_score_train": f1_score(y_train, y_train_pred, average="weighted"),
                         "f1_score_valid": f1_score(y_valid, y_valid_pred, average="weighted"),
-                        "f1_score_test": f1_score(y_test, y_test_pred, average="weighted"),
+                        "f1_score": f1_score(y_test, y_test_pred, average="weighted"),
                     }
                     logger.info(f"Scores: {scores}")
                     wandb.log(scores)
@@ -286,14 +286,15 @@ def train_models(X_train, y_train, X_valid, y_valid, X_test, y_test, class_weigh
     - None
     '''
     try:
+        PROJECT_NAME = project_config['wandb']['wandb_project']
         # Train Logistic Regression model
-        train_logistic_model(X_train, y_train, X_valid, y_valid, X_test, y_test, class_weights, project_config)
+        train_logistic_model(X_train, y_train, X_valid, y_valid, X_test, y_test, class_weights, project_config['sweep'], PROJECT_NAME)
 
         # Train Random Forest model
-        train_random_forest(X_train, y_train, X_valid, y_valid, X_test, y_test, class_weights, project_config)
+        train_random_forest(X_train, y_train, X_valid, y_valid, X_test, y_test, class_weights, project_config['sweep'], PROJECT_NAME)
 
         # Train XGBoost model
-        train_xgb_model(X_train, y_train, X_valid, y_valid, X_test, y_test, project_config)
+        train_xgb_model(X_train, y_train, X_valid, y_valid, X_test, y_test, class_weights, project_config['sweep'], PROJECT_NAME)
 
     except Exception as e:
         logger.error(f"An error occurred while training the models: {str(e)}")

@@ -7,7 +7,7 @@ from pipeline.utils import setup_logging, drop_null_values, fill_missing_values_
 logger = setup_logging()
 
 
-def save_encoder_scaler(encoder, scaler, encoder_path='output/truck_data_encoder.pkl', scaler_path='output/truck_data_scaler.pkl'):
+def save_encoder_scaler(encoder, scaler, encoder_path='files/truck_data_encoder.pkl', scaler_path='files/truck_data_scaler.pkl'):
     try:
         dump(encoder, open(encoder_path, 'wb'))
         dump(scaler, open(scaler_path, 'wb'))
@@ -26,8 +26,11 @@ def calculate_mode(data, column_name):
     except Exception as e:
         logger.error(f"An error occurred during mode calculation: {str(e)}")
 
-def processing_data(config, train, valid, test):
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+import pandas as pd
+import numpy as np
 
+def processing_data(config, train, valid, test):
     try:
         columns_to_drop_nulls = config['features']['columns_to_drop_null_values']
         encode_columns = config['features']['encode_column_names']
@@ -40,19 +43,29 @@ def processing_data(config, train, valid, test):
         test = drop_null_values(test, columns_to_drop_nulls)
 
         load_capacity_mode = calculate_mode(train, 'load_capacity_pounds')
-
-
         fill_missing_values_with_mode(train, 'load_capacity_pounds', load_capacity_mode)
         fill_missing_values_with_mode(valid, 'load_capacity_pounds', load_capacity_mode)
         fill_missing_values_with_mode(test, 'load_capacity_pounds', load_capacity_mode)
 
+        try:
+            encoder = OneHotEncoder(sparse_output=False, handle_unknown='ignore')
+        except TypeError:
+            encoder = OneHotEncoder(sparse=False, handle_unknown='ignore')
 
-        encoder = OneHotEncoder(sparse=False, handle_unknown='ignore')
-        
         encoder.fit(train[encode_columns])
-        train = process_categorical_data(train, encoder, encode_columns)
-        valid = process_categorical_data(valid, encoder, encode_columns)
-        test = process_categorical_data(test, encoder, encode_columns)
+
+        def safe_process(df):
+            encoded_array = encoder.transform(df[encode_columns])
+            if not isinstance(encoded_array, np.ndarray):
+                encoded_array = encoded_array.toarray()
+            encoded_cols = encoder.get_feature_names_out(encode_columns)
+            encoded_df = pd.DataFrame(encoded_array, columns=encoded_cols, index=df.index)
+            df = pd.concat([df.drop(columns=encode_columns), encoded_df], axis=1)
+            return df
+
+        train = safe_process(train)
+        valid = safe_process(valid)
+        test = safe_process(test)
 
         scaler = StandardScaler()
         train[cts_cols] = scaler.fit_transform(train[cts_cols])
@@ -61,20 +74,16 @@ def processing_data(config, train, valid, test):
 
         save_encoder_scaler(encoder, scaler)
 
-        X_train = train[cts_cols + cat_cols]
-        y_train = train[target]
+        onehot_cols = list(encoder.get_feature_names_out(encode_columns))
+        keep_cat_cols = [c for c in cat_cols if c not in encode_columns]  # giữ cat chưa encode
+        feature_cols = cts_cols + keep_cat_cols + onehot_cols
 
-        X_valid = valid[cts_cols + cat_cols]
-        y_valid = valid[target]
-
-        X_test = test[cts_cols + cat_cols]
-        y_test = test[target]
-
-        X_train = X_train.drop(encode_columns, axis=1)
-        X_valid = X_valid.drop(encode_columns, axis=1)
-        X_test = X_test.drop(encode_columns, axis=1)
+        X_train, y_train = train[feature_cols], train[target]
+        X_valid, y_valid = valid[feature_cols], valid[target]
+        X_test, y_test = test[feature_cols], test[target]
 
         return X_train, y_train, X_valid, y_valid, X_test, y_test
 
     except Exception as e:
         logger.error(f"An error occurred while processing the data: {str(e)}")
+        return None, None, None, None, None, None

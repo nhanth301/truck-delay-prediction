@@ -29,12 +29,16 @@ hopsworks:
 
 wandb:
   wandb_api_key: ${WANDB_API_KEY}
-  wandb_project: 'TEST_PROJECT'
+  wandb_project: 'truck-delay-classification'
+  wandb_user: 'nhanthien-sv-hcmute'
 
 split_date_ranges:
   train_end_date: '2019-01-30'
   test_start_date: '2019-02-07'
 
+preprocess_model:
+  scaler: 'files/truck_data_scaler.pkl'
+  encoder: 'files/truck_data_encoder.pkl'
 
 features:
   cts_col_names : ['route_avg_temp', 'route_avg_wind_speed',
@@ -212,17 +216,17 @@ sweep:
 
     # --- Random Forest ---
     n_estimators:
-      values: [8, 12, 16, 20]
+      values: [8,]
     max_depth:
-      values: [null, 5, 10, 15, 20]
+      values: [null, 5]
     min_samples_split:
-      values: [2, 4, 8, 12]
+      values: [2]
 
     # --- Logistic Regression ---
     penalty:
       values: ["l1", "l2"]
     C:
-      values: [0.01, 0.1, 1, 10]
+      values: [0.01]
 
     # --- XGBoost ---
     learning_rate:
