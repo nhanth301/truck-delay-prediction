@@ -1,4 +1,4 @@
-# 🚛 Truck Delay Prediction Pipeline
+# Truck Delay Prediction 🚛 
 
 ## 📌 Overview
 This project implements an **end-to-end machine learning pipeline** for predicting truck delivery delays.  
