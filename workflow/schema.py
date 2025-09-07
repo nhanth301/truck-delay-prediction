@@ -1,7 +1,7 @@
 from langgraph.graph import StateGraph
 from typing import TypedDict, List, Annotated, Dict, Any
 import pandas as pd
-
+import logging
 class State(TypedDict, total=False):
     config: Dict[str, Any]
     constant: Dict[str, Any]
@@ -16,3 +16,4 @@ class State(TypedDict, total=False):
     data_drift: Dict[str, Any]
     model_drift: Dict[str, Any]
     final_data: pd.DataFrame
+    logger: logging.Logger

@@ -8,6 +8,7 @@ from workflow.nodes.init import init_node
 from langgraph.graph import StateGraph, START, END
 from workflow.schema import State
 from langchain_core.runnables.graph_mermaid import draw_mermaid_png
+from pipeline.utils import load_config
 
 def create_graph():
     builder = StateGraph(State)
@@ -55,10 +56,10 @@ def create_graph():
 
 if __name__ == '__main__':
     graph = create_graph()
-    mermaid_syntax = graph.get_graph().draw_mermaid()
-    draw_mermaid_png(mermaid_syntax, output_file_path="my_langgraph_graph.png")
-    # config = load_config()
-    # graph.invoke({'config': config})
+    # mermaid_syntax = graph.get_graph().draw_mermaid()
+    # draw_mermaid_png(mermaid_syntax, output_file_path="my_langgraph_graph.png")
+    config = load_config()
+    graph.invoke({'config': config})
     
 
 
